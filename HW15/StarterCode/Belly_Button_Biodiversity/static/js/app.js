@@ -1,29 +1,48 @@
 function buildMetadata(sample) {
+    
+    d3.json(`/metadata/${sample}`).then((data) => {
+      var panel = d3.select("#sample-metadata");
+      panel.html("");
+      Object.entries(data).forEach(([key, value]) => {
+      panel.append('h6').text(`${key}: ${value}`);
+      });
+    });
 
-  // @TODO: Complete the following function that builds the metadata panel
-
-  // Use `d3.json` to fetch the metadata for a sample
-    // Use d3 to select the panel with id of `#sample-metadata`
-
-    // Use `.html("") to clear any existing metadata
-
-    // Use `Object.entries` to add each key and value pair to the panel
-    // Hint: Inside the loop, you will need to use d3 to append new
-    // tags for each key-value in the metadata.
-
-    // BONUS: Build the Gauge Chart
-    // buildGauge(data.WFREQ);
 }
 
 function buildCharts(sample) {
 
-  // @TODO: Use `d3.json` to fetch the sample data for the plots
+  d3.json(`/samples/${sample}`).then((data) => {
+    var otu_ids = data.otu_ids;
+    var sample_values = data.sample_values;
+    var otu_labels = data.otu_labels;
 
-    // @TODO: Build a Bubble Chart using the sample data
+    var trace1 = {
+      x: otu_ids,
+      y: sample_values,
+      mode: 'markers',
+      marker: {
+        size: sample_values,
+        color: otu_ids
+      }
+    };
 
-    // @TODO: Build a Pie Chart
-    // HINT: You will need to use slice() to grab the top 10 sample_values,
-    // otu_ids, and labels (10 each).
+    var data1 = [trace1];
+    
+    Plotly.plot("bubble", data1);
+
+    var trace2 = {
+      values: sample_values.slice(0,10),
+      labels: otu_ids.slice(0,10),
+      hovertext: otu_labels.slice(0,10),
+      hoverinfo: 'hovertext',
+      type: "pie"
+    };
+    
+    var data2 = [trace2];
+    
+    Plotly.plot("pie", data2);
+  });
 }
 
 function init() {
@@ -50,6 +69,7 @@ function optionChanged(newSample) {
   // Fetch new data each time a new sample is selected
   buildCharts(newSample);
   buildMetadata(newSample);
+
 }
 
 // Initialize the dashboard
